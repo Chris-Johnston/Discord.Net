@@ -86,7 +86,7 @@ on_success:
   # (we could also push to a specific branch, say if we were to separate the docs and the main repo)
   - git add .
   - ps: git commit -m "AppVeyor build $($env:BUILD)"
-  - ps: push origin master # need to ensure this is the same that we checked out
+  - git push origin master # need to ensure this is the same that we checked out
 
 
   # TODO need to set up copying those docs to the deployment repo
