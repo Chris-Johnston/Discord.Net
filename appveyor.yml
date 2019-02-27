@@ -80,7 +80,7 @@ on_success:
   - git clone https://github.com/Chris-Johnston/TestDocs.git gh_pages
   - ps: Set-Location -Path gh_pages
   # remove all of the existing stuff
-  - ps: Remove-Item . -Recurse
+  - ps: Remove-Item *.* -Recurse
   - ps: Copy-Item -Path "..\docs\_site" -Recurse -Container -Destination "."
   # now update the output repo
   # (we could also push to a specific branch, say if we were to separate the docs and the main repo)
