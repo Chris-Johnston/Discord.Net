@@ -26,6 +26,7 @@ pull_requests:
 cache: test/Discord.Net.Tests/cache.db
 
 environment:
+  GH_PAGES_DOCS_REPO: https://github.com/Chris-Johnston/TestDocs.git
   DOTNET_CLI_TELEMETRY_OPTOUT: 1
   DNET_TEST_TOKEN:
     secure: l7h5e7UE7yRd70hAB97kjPiQpPOShwqoBbOzEAYQ+XBd/Pre5OA33IXa3uisdUeQJP/nPFhcOsI+yn7WpuFaoQ==
@@ -65,6 +66,8 @@ build_script:
     }
 - ps: dotnet build Discord.Net.sln -c "Release" /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG"
 
+# todo, need to only do this on windows in powershell
+# and only on dev branch
 on_success:
   # set up git credentials
   - git config --global credential.helper store
@@ -73,6 +76,19 @@ on_success:
   - git config --global user.name "Chris Johnston (automated docs)"
   # actually build the docs
   - docfx docs\docfx.json
+  # clone the docs
+  # could clone into the gh-pages branch with --branch gh-pages
+  - ps: git clone  $env:GH_PAGES_DOCS_REPO ..\gh_pages
+  - cd ..\gh_pages
+  # remove all of the existing stuff
+  - ps: Remove-Item . -Recurse
+  - ps: Copy-Item -Path "..\Discord.Net\docs\_site" -Recurse -Container -Destination "."
+  # now update the output repo
+  # (we could also push to a specific branch, say if we were to separate the docs and the main repo)
+  - git add .
+  - ps: git commit -m "AppVeyor build $($env:BUILD)"
+  - ps: push origin master # need to ensure this is the same that we checked out
+
 
   # TODO need to set up copying those docs to the deployment repo
 # remove this for testing
