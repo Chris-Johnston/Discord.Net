@@ -81,7 +81,7 @@ on_success:
   - ps: Set-Location -Path gh_pages
   # remove all of the existing stuff
   - ps: Remove-Item *.* -Recurse
-  - ps: Copy-Item -Path "..\docs\_site\*.*" -Recurse -Container -Destination "."
+  - ps: Copy-Item -Path "..\docs\_site\" -Recurse -Container -Destination "."
   # now update the output repo
   # (we could also push to a specific branch, say if we were to separate the docs and the main repo)
   # if we were to do docs in one repo and the codebase in another (which I'm not totally sure how well that would work)
