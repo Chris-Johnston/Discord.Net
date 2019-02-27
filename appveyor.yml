@@ -77,7 +77,7 @@ on_success:
   - git config --global user.name "Chris Johnston (automated docs)"
   # clone the docs
   # could clone into the gh-pages branch with --branch gh-pages
-  - ps: git clone https://github.com/Chris-Johnston/TestDocs.git gh_pages
+  - git clone https://github.com/Chris-Johnston/TestDocs.git gh_pages
   - ps: cd gh_pages
   # remove all of the existing stuff
   - ps: Remove-Item . -Recurse
