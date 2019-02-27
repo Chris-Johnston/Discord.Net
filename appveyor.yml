@@ -77,11 +77,11 @@ on_success:
   - git config --global user.name "Chris Johnston (automated docs)"
   # clone the docs
   # could clone into the gh-pages branch with --branch gh-pages
-  - ps: git clone  $env:GH_PAGES_DOCS_REPO "..\gh_pages"
-  - cd ..\gh_pages
+  - ps: git clone  $env:GH_PAGES_DOCS_REPO gh_pages
+  - ps: cd gh_pages
   # remove all of the existing stuff
   - ps: Remove-Item . -Recurse
-  - ps: Copy-Item -Path "..\Discord.Net\docs\_site" -Recurse -Container -Destination "."
+  - ps: Copy-Item -Path "..\docs\_site" -Recurse -Container -Destination "."
   # now update the output repo
   # (we could also push to a specific branch, say if we were to separate the docs and the main repo)
   - git add .
