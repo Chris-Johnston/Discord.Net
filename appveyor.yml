@@ -84,6 +84,11 @@ on_success:
   - ps: Copy-Item -Path "..\docs\_site\*.*" -Recurse -Container -Destination "."
   # now update the output repo
   # (we could also push to a specific branch, say if we were to separate the docs and the main repo)
+  # if we were to do docs in one repo and the codebase in another (which I'm not totally sure how well that would work)
+  # we could have a step that runs before the docfx build step which clones both the latest d.net
+  # and the latest docs, then runs these same deployment steps.
+  # then, we would deploy to another repo or the gh pages branch of the docs repo with the static files to host
+  # the biggest benefit to this is free hosting! yay!
   - git add .
   - ps: git commit -m "AppVeyor build $($env:BUILD)"
   - git push origin master # need to ensure this is the same that we checked out
