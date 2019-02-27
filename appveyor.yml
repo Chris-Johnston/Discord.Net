@@ -2,9 +2,14 @@ version: build-{build}
 branches:
   only:
   - dev
+  - feature/ci-docs # testing
 image:
 - Visual Studio 2017
-- Ubuntu
+# - Ubuntu # Ignore while testing for now
+
+install:
+  # instlal docfx for building docs later
+  - ps: choco install docfx -y
 
 nuget:
   disable_publish_on_pr: true
@@ -20,6 +25,10 @@ environment:
   DNET_TEST_TOKEN:
     secure: l7h5e7UE7yRd70hAB97kjPiQpPOShwqoBbOzEAYQ+XBd/Pre5OA33IXa3uisdUeQJP/nPFhcOsI+yn7WpuFaoQ==
   DNET_TEST_GUILDID: 273160668180381696
+  GITHUB_TOKEN:
+    # add a token using Settings > Developer Settings > Personal Access Tokens in GitHub
+    # because my repo is private, I required the repos scope
+    secure: OxB+WRxFhveGdVVyE7YZ7nPlm4EBAgR56+8CtzHZWAz84oTmeqV+5q/riZCEcGDC
 init:
 - ps: $Env:BUILD = "$($Env:APPVEYOR_BUILD_NUMBER.PadLeft(5, "0"))"
 
@@ -50,45 +59,56 @@ build_script:
       appveyor-retry dotnet restore Discord.Net.sln -v Minimal /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG"
     }
 - ps: dotnet build Discord.Net.sln -c "Release" /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG"
-after_build:
-- ps: if ($isWindows) { dotnet pack "src\Discord.Net.Core\Discord.Net.Core.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
-- ps: if ($isWindows) { dotnet pack "src\Discord.Net.Rest\Discord.Net.Rest.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
-- ps: if ($isWindows) { dotnet pack "src\Discord.Net.WebSocket\Discord.Net.WebSocket.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
-- ps: if ($isWindows) { dotnet pack "src\Discord.Net.Commands\Discord.Net.Commands.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
-- ps: if ($isWindows) { dotnet pack "src\Discord.Net.Webhook\Discord.Net.Webhook.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
-- ps: if ($isWindows) { dotnet pack "src\Discord.Net.Providers.WS4Net\Discord.Net.Providers.WS4Net.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
-- ps: if ($isWindows) { dotnet pack "src\Discord.Net.Analyzers\Discord.Net.Analyzers.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
-- ps: >-
-    if ($isWindows)
-    {
-      if ($Env:APPVEYOR_REPO_TAG -eq "true") {
-        nuget pack src/Discord.Net/Discord.Net.nuspec -OutputDirectory "artifacts" -properties suffix=""
-      } else {
-        nuget pack src/Discord.Net/Discord.Net.nuspec -OutputDirectory "artifacts" -properties suffix="-$Env:BUILD"
-      }
-    }
-- ps: if ($isWindows) { Get-ChildItem artifacts/*.nupkg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } }
 
-test_script:
-- ps: >-
-    if ($APPVEYOR_PULL_REQUEST_NUMBER -eq "") {
-      dotnet test test/Discord.Net.Tests/Discord.Net.Tests.csproj -c "Release" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG"
-    }
+on_success:
+  # set up git credentials
+  - git config --global credential.helper store
+  - ps: Add-Content "$HOME\.git-credentials" "https://$($env:GITHUB_TOKEN):x-oauth-basic@github.com`n"
+  - git config --global user.email "chjohnston@protonmail.com"
+  - git config --global user.name "Chris Johnston (automated docs)"
+  # actually build the docs
+  - docfx docs/docfx.json
+  # TODO need to set up copying those docs to the deployment repo
+# remove this for testing
+# after_build:
+# - ps: if ($isWindows) { dotnet pack "src\Discord.Net.Core\Discord.Net.Core.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
+# - ps: if ($isWindows) { dotnet pack "src\Discord.Net.Rest\Discord.Net.Rest.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
+# - ps: if ($isWindows) { dotnet pack "src\Discord.Net.WebSocket\Discord.Net.WebSocket.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
+# - ps: if ($isWindows) { dotnet pack "src\Discord.Net.Commands\Discord.Net.Commands.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
+# - ps: if ($isWindows) { dotnet pack "src\Discord.Net.Webhook\Discord.Net.Webhook.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
+# - ps: if ($isWindows) { dotnet pack "src\Discord.Net.Providers.WS4Net\Discord.Net.Providers.WS4Net.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
+# - ps: if ($isWindows) { dotnet pack "src\Discord.Net.Analyzers\Discord.Net.Analyzers.csproj" -c "Release" -o "../../artifacts" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG" }
+# - ps: >-
+#     if ($isWindows)
+#     {
+#       if ($Env:APPVEYOR_REPO_TAG -eq "true") {
+#         nuget pack src/Discord.Net/Discord.Net.nuspec -OutputDirectory "artifacts" -properties suffix=""
+#       } else {
+#         nuget pack src/Discord.Net/Discord.Net.nuspec -OutputDirectory "artifacts" -properties suffix="-$Env:BUILD"
+#       }
+#     }
+# - ps: if ($isWindows) { Get-ChildItem artifacts/*.nupkg | % { Push-AppveyorArtifact $_.FullName -FileName $_.Name } }
+# also remove this for now. we should work on separate integration + unit tests at another time
+# test_script:
+# - ps: >-
+#     if ($APPVEYOR_PULL_REQUEST_NUMBER -eq "") {
+#       dotnet test test/Discord.Net.Tests/Discord.Net.Tests.csproj -c "Release" --no-build /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG"
+#     }
 
-deploy:
-- provider: NuGet
-  server: https://www.myget.org/F/discord-net/api/v2/package
-  api_key:
-    secure: Jl7BXeUjRnkVHDMBuUWSXcEOkrli1PBleW2IiLyUs5j63UNUNp1hcjaUJRujx9lz
-  symbol_server: https://www.myget.org/F/discord-net/symbols/api/v2/package
-  on:
-    branch: dev
-    CI_WINDOWS: true
-- provider: NuGet
-  server: https://www.myget.org/F/rogueexception/api/v2/package
-  api_key:
-    secure: D+vW2O2LBf/iJb4f+q8fkyIW2VdIYIGxSYLWNrOD4BHlDBZQlJipDbNarWjUr2Kn
-  symbol_server: https://www.myget.org/F/rogueexception/symbols/api/v2/package
-  on:
-    branch: dev
-    CI_WINDOWS: true
+# deploy:
+# - provider: NuGet
+#   server: https://www.myget.org/F/discord-net/api/v2/package
+#   api_key:
+#     secure: Jl7BXeUjRnkVHDMBuUWSXcEOkrli1PBleW2IiLyUs5j63UNUNp1hcjaUJRujx9lz
+#   symbol_server: https://www.myget.org/F/discord-net/symbols/api/v2/package
+#   on:
+#     branch: dev
+#     CI_WINDOWS: true
+# - provider: NuGet
+#   server: https://www.myget.org/F/rogueexception/api/v2/package
+#   api_key:
+#     secure: D+vW2O2LBf/iJb4f+q8fkyIW2VdIYIGxSYLWNrOD4BHlDBZQlJipDbNarWjUr2Kn
+#   symbol_server: https://www.myget.org/F/rogueexception/symbols/api/v2/package
+#   on:
+#     branch: dev
+#     CI_WINDOWS: true
