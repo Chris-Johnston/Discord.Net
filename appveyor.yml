@@ -67,7 +67,9 @@ on_success:
   - git config --global user.email "chjohnston@protonmail.com"
   - git config --global user.name "Chris Johnston (automated docs)"
   # actually build the docs
-  - docfx docs/docfx.json
+  - docfx docs\docfx.json
+  # debugging
+  - ps: ls -r
   # TODO need to set up copying those docs to the deployment repo
 # remove this for testing
 # after_build:
