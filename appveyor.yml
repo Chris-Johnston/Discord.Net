@@ -65,6 +65,7 @@ build_script:
       appveyor-retry dotnet restore Discord.Net.sln -v Minimal /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG"
     }
 - ps: dotnet build Discord.Net.sln -c "Release" /p:BuildNumber="$Env:BUILD" /p:IsTagBuild="$Env:APPVEYOR_REPO_TAG"
+- ps: docfx docs\docfx.json
 
 # todo, need to only do this on windows in powershell
 # and only on dev branch
@@ -74,11 +75,9 @@ on_success:
   - ps: Add-Content "$HOME\.git-credentials" "https://$($env:GITHUB_TOKEN):x-oauth-basic@github.com`n"
   - git config --global user.email "chjohnston@protonmail.com"
   - git config --global user.name "Chris Johnston (automated docs)"
-  # actually build the docs
-  - docfx docs\docfx.json
   # clone the docs
   # could clone into the gh-pages branch with --branch gh-pages
-  - ps: git clone  $env:GH_PAGES_DOCS_REPO ..\gh_pages
+  - ps: git clone  $env:GH_PAGES_DOCS_REPO "..\gh_pages"
   - cd ..\gh_pages
   # remove all of the existing stuff
   - ps: Remove-Item . -Recurse
