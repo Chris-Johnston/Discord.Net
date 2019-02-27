@@ -11,6 +11,11 @@ install:
   # instlal docfx for building docs later
   - ps: choco install docfx -y
 
+artifacts:
+  - path: docs/_site
+    name: Documentation
+    type: zip
+
 nuget:
   disable_publish_on_pr: true
 pull_requests:
@@ -68,8 +73,7 @@ on_success:
   - git config --global user.name "Chris Johnston (automated docs)"
   # actually build the docs
   - docfx docs\docfx.json
-  # debugging
-  - ps: ls -r
+
   # TODO need to set up copying those docs to the deployment repo
 # remove this for testing
 # after_build:
