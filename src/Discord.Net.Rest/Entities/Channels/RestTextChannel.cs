@@ -17,7 +17,7 @@ namespace Discord.Rest
         /// <inheritdoc />
         public string Topic { get; private set; }
         /// <inheritdoc />
-        public virtual int SlowModeInterval { get; private set; } 
+        public int SlowModeInterval { get; private set; }
         /// <inheritdoc />
         public ulong? CategoryId { get; private set; }
 
