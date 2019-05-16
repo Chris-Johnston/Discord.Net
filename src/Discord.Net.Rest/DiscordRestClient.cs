@@ -27,6 +27,11 @@ namespace Discord.Rest
         // used for socket client rest access
         internal DiscordRestClient(DiscordRestConfig config, API.DiscordRestApiClient api) : base(config, api) { }
 
+        internal void UpdateCurrentUser(ISelfUser user)
+        {
+            base.CurrentUser = user;
+        }
+
         private static API.DiscordRestApiClient CreateApiClient(DiscordRestConfig config)
             => new API.DiscordRestApiClient(config.RestClientProvider, DiscordRestConfig.UserAgent);
         internal override void Dispose(bool disposing)

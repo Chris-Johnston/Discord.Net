@@ -536,6 +536,8 @@ namespace Discord.WebSocket
                                         _sessionId = data.SessionId;
                                         _unavailableGuildCount = unavailableGuilds;
                                         CurrentUser = currentUser;
+                                        // Rest.UpdateCurrentUser(CurrentUser);
+                                        // (Rest as BaseDiscordClient).CurrentUser
                                         State = state;
                                     }
                                     catch (Exception ex)
